@@ -1,0 +1,40 @@
+name: Build Android NDK for ARMv7
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y git python3 cmake ninja-build ccache clang lld llvm autoconf automake libtool pkg-config
+
+      - name: Clone Android NDK Source
+        run: |
+          git clone https://android.googlesource.com/platform/ndk
+          cd ndk
+          git checkout ndk-r26c  # Change this to the desired NDK version
+
+      - name: Build Android NDK for ARMv7
+        run: |
+          cd ndk
+          ./build/tools/build.py --system=linux-x86_64 --arch=arm
+
+      - name: Upload Built NDK
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-ndk-armv7
+          path: ndk/out/*
